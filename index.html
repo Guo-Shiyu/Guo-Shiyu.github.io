@@ -1,11 +1,32 @@
+hello 
 <script language="javascript">
+    // gen keycode map 
+    KeyCodeMap = {}
+    const KeyCodeOf_A = 65  // 'A'
+    const KeyCodeOf_0 = 48  // '1'
+    for (let index = 0; index < 26; index++) {
+        KeyCodeMap[KeyCodeOf_A + index] = String.fromCharCode(KeyCodeOf_A + index)
+    }
+    for (let index = 0; index < 10; index++) {
+        KeyCodeMap[KeyCodeOf_0 + index] = String.fromCharCode(KeyCodeOf_0 + index)
+    }
+
+    // console.log(KeyCodeMap)
+
+    // password
+    Password = {}
+    Password.Expect = '1234'
+    Password.Input = 0
+    Password.Expect = Password.Expect.toUpperCase()
     document.onkeydown = () => {
-        if (event.keyCode == 51) // '3'
-        {
-            location = 'https://github.com/aya-prover/PLCT-Weekly'
-        } else if (event.keyCode == '52')   // '4'
-        {
-            alert(" 4 was hit")
+        if (KeyCodeMap[event.keyCode] == Password.Expect[Password.Input]) {
+            Password.Input += 1
+        } else {
+            Password.Input = 0
+        }
+
+        if (Password.Input == Password.Expect.length) {
+            location = "https://www.w3school.com.cn/jsref/jsref_obj_string.asp"
         }
     };
 </script>
