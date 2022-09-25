@@ -1,0 +1,14 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>Categories - Category -  Shiyu | Random access to my thoughts.</title>
+        <link>https://silvercicada.github.io/categories/</link>
+        <description>Categories - Category -  Shiyu | Random access to my thoughts.</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</lastBuildDate><atom:link href="https://silvercicada.github.io/categories/" rel="self" type="application/rss+xml" /><item>
+    <title>Translation</title>
+    <link>https://silvercicada.github.io/categories/translation/</link>
+    <pubDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</pubDate><author>
+        <name>Author</name>
+    </author><guid>https://silvercicada.github.io/categories/translation/</guid>
+    <description><![CDATA[]]></description>
+</item></channel>
+</rss>

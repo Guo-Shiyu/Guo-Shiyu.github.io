@@ -1,0 +1,15 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>123 - Tag -  Shiyu | Random access to my thoughts.</title>
+        <link>https://silvercicada.github.io/tags/123/</link>
+        <description>123 - Tag -  Shiyu | Random access to my thoughts.</description>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</lastBuildDate><atom:link href="https://silvercicada.github.io/tags/123/" rel="self" type="application/rss+xml" /><item>
+    <title>[译] Lua : 穿过“针孔”的语言</title>
+    <link>https://silvercicada.github.io/posts/first_post/</link>
+    <pubDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</pubDate><author>
+        <name>Shiyu</name>
+    </author><guid>https://silvercicada.github.io/posts/first_post/</guid>
+    <description><![CDATA[123123 123
+this is a test msg]]></description>
+</item></channel>
+</rss>
