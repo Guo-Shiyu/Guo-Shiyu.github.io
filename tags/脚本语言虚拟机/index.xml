@@ -1,14 +1,14 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
         <title>脚本语言虚拟机 - Tag -  Shiyu | Random access to my thoughts.</title>
-        <link>https://silvercicada.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/</link>
+        <link>https://guo-shiyu.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/</link>
         <description>脚本语言虚拟机 - Tag -  Shiyu | Random access to my thoughts.</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</lastBuildDate><atom:link href="https://silvercicada.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</lastBuildDate><atom:link href="https://guo-shiyu.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="self" type="application/rss+xml" /><item>
     <title>[译] Lua : 能够穿过“针孔”的语言</title>
-    <link>https://silvercicada.github.io/posts/first_post/</link>
+    <link>https://guo-shiyu.github.io/posts/first_post/</link>
     <pubDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</pubDate><author>
         <name>Shiyu</name>
-    </author><guid>https://silvercicada.github.io/posts/first_post/</guid>
+    </author><guid>https://guo-shiyu.github.io/posts/first_post/</guid>
     <description><![CDATA[this is a test summary]]></description>
 </item></channel>
 </rss>
