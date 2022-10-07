@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noodp" />
+    <title class="pjax-title">[译] Lua : 能够穿过&#39;针孔&#39;的语言 -  Shiyu | Random access to my thoughts.</title><meta name="Description" content=""><meta property="og:title" content="[译] Lua : 能够穿过&#39;针孔&#39;的语言" />
+<meta property="og:description" content="脚本语言一个重要的特性就是其与某种系统级语言的交互能力. 这种交互有两种主要的形式: 扩展和嵌入. 在实践中. FFI 覆盖了大部分像访问外部库, 或者进行系统调用这样的对于扩展的需要. 但另一方面. &ldquo;嵌入&quot;的要求则很难满足. 因为这通常需要宿主语言和脚本语言之间更为密切的交互. 仅靠 FFI 并不能满足这一需求." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://guo-shiyu.github.io/posts/passing-a-language-through-the-needle/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-09-22T23:12:43+08:00" />
+<meta property="article:modified_time" content="2022-10-08T23:12:43+08:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="[译] Lua : 能够穿过&#39;针孔&#39;的语言"/>
+<meta name="twitter:description" content="脚本语言一个重要的特性就是其与某种系统级语言的交互能力. 这种交互有两种主要的形式: 扩展和嵌入. 在实践中. FFI 覆盖了大部分像访问外部库, 或者进行系统调用这样的对于扩展的需要. 但另一方面. &ldquo;嵌入&quot;的要求则很难满足. 因为这通常需要宿主语言和脚本语言之间更为密切的交互. 仅靠 FFI 并不能满足这一需求."/>
+<meta name="application-name" content=" Shiyu | Random access to my thoughts.">
+<meta name="apple-mobile-web-app-title" content=" Shiyu | Random access to my thoughts.">
+
+<meta name="theme-color" content="#f8f8f8"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="canonical" href="http://guo-shiyu.github.io/posts/passing-a-language-through-the-needle/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/fontawesome-free/all.min.css">
+        <noscript><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"></noscript><link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="/lib/animate/animate.min.css">
+        <noscript><link rel="stylesheet" href="/lib/animate/animate.min.css"></noscript><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "[译] Lua : 能够穿过'针孔'的语言",
+        "inLanguage": "en",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/guo-shiyu.github.io\/posts\/passing-a-language-through-the-needle\/"
+        },"genre": "posts","keywords": "脚本语言虚拟机","wordcount":  1468 ,
+        "url": "http:\/\/guo-shiyu.github.io\/posts\/passing-a-language-through-the-needle\/","datePublished": "2022-09-22T23:12:43+08:00","dateModified": "2022-10-08T23:12:43+08:00","publisher": {
+            "@type": "Organization",
+            "name": "Shiyu"},"author": {
+                "@type": "Person",
+                "name": "Shiyu"
+            },"description": ""
+    }
+    </script></head>
+
+<body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">
+        function setTheme(theme) {document.body.setAttribute('theme', theme); document.documentElement.style.setProperty('color-scheme', theme === 'light' ? 'light' : 'dark');}
+        function saveTheme(theme) {window.localStorage && localStorage.setItem('theme', theme);}
+        function getMeta(metaName) {const metas = document.getElementsByTagName('meta'); for (let i = 0; i < metas.length; i++) if (metas[i].getAttribute('name') === metaName) return metas[i]; return '';}
+        if (window.localStorage && localStorage.getItem('theme')) {let theme = localStorage.getItem('theme');theme === 'light' || theme === 'dark' || theme === 'black' ? setTheme(theme) : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light')); } else { if ('' === 'light' || '' === 'dark' || '' === 'black') setTheme(''), saveTheme(''); else saveTheme('auto'), window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? setTheme('dark') : setTheme('light');}
+        let metaColors = {'light': '#f8f8f8','dark': '#252627','black': '#000000'}
+        getMeta('theme-color').content = metaColors[document.body.getAttribute('theme')];
+    </script>
+    <div id="back-to-top"></div>
+    <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title=" Shiyu | Random access to my thoughts."></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/"> Home </a><a class="menu-item" href="/posts/" title="try tittle"> Blog </a><a class="menu-item" href="/categories/"> Category </a><a class="menu-item" href="/now/"> Now </a><a class="menu-item" href="/about/"> About </a><span class="menu-item delimiter"></span><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                    <i class="fas fa-adjust fa-fw"></i>
+                    <select class="color-theme-select" id="theme-select-desktop" title="Switch Theme">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="black">Black</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                </a></div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title=" Shiyu | Random access to my thoughts."></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><a class="menu-item" href="/" title="">Home</a><a class="menu-item" href="/posts/" title="try tittle">Blog</a><a class="menu-item" href="/categories/" title="">Category</a><a class="menu-item" href="/now/" title="">Now</a><a class="menu-item" href="/about/" title="">About</a><a href="#" onclick="return false;" class="menu-item theme-select" title="Switch Theme">
+                <i class="fas fa-adjust fa-fw"></i>
+                <select class="color-theme-select" id="theme-select-mobile" title="Switch Theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="black">Black</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+            <div class="container"><div class="toc" id="toc-auto">
+        <h2 class="toc-title">Contents</h2>
+        <div class="toc-content" id="toc-content-auto"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#0-引子">0. 引子</a></li>
+    <li><a href="#1-针孔">1. 针孔</a></li>
+    <li><a href="#2-控制">2. 控制</a></li>
+    <li><a href="#3-数据">3. 数据</a></li>
+    <li><a href="#4-eval-以及-环境">4. eval 以及 环境</a></li>
+    <li><a href="#结语">结语</a></li>
+  </ul>
+</nav></div>
+    </div><script>document.getElementsByTagName("main")[0].setAttribute("pageStyle", "normal")</script><script>document.getElementsByTagName("main")[0].setAttribute("autoTOC", "true")</script><article class="page single"><h1 class="single-title animate__animated animate__flipInX">[译] Lua : 能够穿过&#39;针孔&#39;的语言</h1><h2 class="single-subtitle">可嵌入性是如何影响 Lua 的设计的</h2><div class="post-meta">
+            <div class="post-meta-line">
+                <span class="post-author"><i class="author fas fa-user-circle fa-fw"></i><a href="/" title="Author" rel=" author" class="author">Shiyu</a>
+                </span>&nbsp;<span class="post-category">included in </span>&nbsp;<span class="post-category">category <a href="/categories/translation/"><i class="far fa-folder fa-fw"></i>Translation</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2022-09-22">2022-09-22</time>&nbsp;<i class="far fa-edit fa-fw"></i>&nbsp;<time datetime="2022-10-08">2022-10-08</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;1468 words&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;7 minutes&nbsp;</div>
+        </div><div class="featured-image"><img
+        class="lazyload"
+        data-src="/cover/Jinyincuo.jpg"
+        data-srcset="/cover/Jinyincuo.jpg, /cover/Jinyincuo.jpg 1.5x, /cover/Jinyincuo.jpg 2x"
+        data-sizes="auto"
+        alt="/cover/Jinyincuo.jpg"
+        title="/cover/Jinyincuo.jpg" height="auto" width="auto"></div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>Contents</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#0-引子">0. 引子</a></li>
+    <li><a href="#1-针孔">1. 针孔</a></li>
+    <li><a href="#2-控制">2. 控制</a></li>
+    <li><a href="#3-数据">3. 数据</a></li>
+    <li><a href="#4-eval-以及-环境">4. eval 以及 环境</a></li>
+    <li><a href="#结语">结语</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><blockquote>
+<p>原文链接: <a href="https://www.lua.org/doc/acmqueue2011en.pdf" target="_blank" rel="noopener noreferrer">https://www.lua.org/doc/acmqueue2011en.pdf</a><br>
+原标题:  Passing a Language through the Eye of a Needle</p>
+<p>题图是中国国家博物馆的 <a href="https://zhuanlan.zhihu.com/p/34810874" target="_blank" rel="noopener noreferrer">西汉错金银云纹铜犀尊</a> 头部， 其使用错金工艺将金丝嵌入青铜之中。</p>
+</blockquote>
+<h2 id="0-引子" class="headerLink">
+    <a href="#0-%e5%bc%95%e5%ad%90" class="header-mark"></a>0. 引子</h2><p>脚本语言是当今编程语言世界中重要的组成元素. <strong>其一个重要的特性就是与某种系统语言 ( System Language ) 进行交互的能力.  这种交互有两种主要的形式: 扩展和嵌入</strong>. 在第一种形式中. 系统语言以库和函数的形式扩展脚本语言. 项目主体在脚本语言中完成.  而在第二种形式中.脚本语言嵌入由系统语言编写的宿主程序.从而让宿主程序能够运行脚本文件并调用脚本中的函数. 这时的项目主体则是宿主程序. 在这种情景下,  系统语言也被称之为宿主语言 ( Host Language ).</p>
+<p>许多语言 ( 并不局限在脚本语言 ) 支持以 FFI ( Foreign Language Interface, 外部语言接口 ) 的形式进行扩展.  但仅有 FFI 并不足以让系统语言中的函数完成所有脚本中的函数所能实现的功能 <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>. 在实践中. FFI 覆盖了大部分像访问外部库, 或者进行系统调用这样的对于扩展的需要. 但另一方面. &ldquo;嵌入&quot;的要求则很难满足. 因为这通常需要宿主语言和脚本语言之间更为密切的交互. 仅靠 FFI 并不能满足这一要求.</p>
+<p>在这篇文章中我要讨论&quot;嵌入性为何能影响一门语言的设计, 尤其是如何从设计之初便影响到 Lua 的设计的.  Lua 是一门有着极其强大的嵌入能力的脚本语言. 它已经在各种应用广泛使用, 并且在游戏脚本语言中处于领先位置.</p>
+<h2 id="1-针孔" class="headerLink">
+    <a href="#1-%e9%92%88%e5%ad%94" class="header-mark"></a>1. 针孔</h2><p>在最初的设想中. 一门脚本语言的嵌入性似乎应该属于解释器实现的特性. 给定任何一个解释器, 都应当给定一套 API 来来让宿主程序和脚本进行交互. 然而, 语言的设计本身就对其嵌入的方式有着巨大影响. 换言之, 如果你在头脑中设计了一个具有&quot;嵌入&quot;这一特性的语言, 那这种思维方式本身就会影响到最终创造出的语言.</p>
+<p>对大多数脚本语言来说. 最典型的宿主语言就是 C 了, 因此这些语言的 API 大多都是一些函数、类型、和常量的组合. 这对脚本语言 ( 对外提供的 ) API 的设计施加了一个非常自然但又比较严苛的限制: 他们(API)必须要通过这个&quot;针孔&quot;才能触及脚本语言的特性. 语法构造这一项就已经足够困难了.  例如, 在一个有着像&quot;方法必须被撰写在他们所属的类中&quot;这样的词法要求的脚本语言中, 除非 API 提供了合适的机制, 否则宿主语言不能给一个类添加方法. 同样. 让词法作用域 ( Lexical Scoping ) 通过 API 进行传递也很困难. 因为在词法上宿主函数不能定义在脚本语言函数内.</p>
+<p><strong>对于一门可嵌入的语言来说, 其 API 的关键要素是 eval 函数, 其能将一段脚本的语言的字符串视作源代码来执行</strong>. 尤其是当一门脚本语言应用在嵌入的场景中, 所有的脚本代码都是宿主语言调用 eval 函数来运行的. <strong>eval 函数也是设计交互 API 的既约集<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></strong>.  只要有了一个适当的eval函数. 宿主语言就能够在脚本语言的环境中做几乎任何事情: 像变量赋值 <code>eval(&quot;a = 20&quot;)</code>, 变量求值 <code>eval(&quot;return a&quot;) </code>, 调用函数 <code>eval(&quot;foo(a, '1004')&quot;)</code> 等.  像数组这样的数据结构也能够通过对合适的语句执行 eval 函数来创建和使用. 例如, 假定有一个设定好的 eval 函数. 那么这段 C 代码就能够复制一个 C 中的整数数组到脚本语言中.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">copy</span> <span class="p">(</span><span class="kt">int</span> <span class="n">ar</span><span class="p">[],</span> <span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">eval</span><span class="p">(</span><span class="s">&#34;ar = {}&#34;</span><span class="p">);</span>    <span class="cm">/* create an empty array */</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">){</span> 
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">buff</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span> 
+</span></span><span class="line"><span class="cl">        <span class="n">sprintf</span><span class="p">(</span><span class="n">buff</span><span class="p">,</span> <span class="s">&#34;ar[%d] = %d&#34;</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ar</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span> 
+</span></span><span class="line"><span class="cl">        <span class="n">eval</span><span class="p">(</span><span class="n">buff</span><span class="p">);</span>     <span class="cm">/* assign i_th element */</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> 
+</span></span><span class="line"><span class="cl"><span class="p">}</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 译者注：可以看出这门语言使用 `ident = {}` 来定义数组并且以 1 作为数组的起始下标, 事实上这就是 Lua 中的语法.  
+</span></span></span></code></pre></div><p><strong>除了简洁和完备的两种优点外. 单独的 eval 函数作为 API 还有有两个缺点: 第一是由于语法解析 ( Parse ) 和解释执行代码块 ( Chunk ) 的开销导致大量使用时效率太差. 第二是这样也不方便使用, 因为所有用于操纵脚本的字符串都要从 C 中创建并且所有的数据都要经过 API 序列化<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup></strong>. 然而, 这样的机制在现实的应用程序中频繁使用, Python 中称这为<code>&quot;Very High-level Embedding&quot;</code>.</p>
+<p>一个更高效也更容易使用的 API 需要变的复杂些. 除了有一个 eval 函数来执行脚本以外. 还需要更加直接的方法来调用脚本语言中的函数, 处理 ( handle ) 其中的错误, 在宿主语言和脚本环境中传递数据等. 在接下来的一节中, 我还要从以上这几种不同的角度讨论嵌入式脚本语言的 API, 还有他们如何影响到, 也如何被 Lua 的设计所影响. 但首先. 我要先说明这些 API 的存在本身, 是如何影响到一门语言的.</p>
+<p><strong>给定一个嵌入式的语言和它的 API. 不难用宿主语言写出一个库来将这些 API 导回( Export Back ) 到脚本层中. 所以, 有一种有趣的反射方式是宿主语言表现得像脚本语言的&quot;镜子&quot;</strong>. Lua 中的数种机制就使用了这样的技术. 例如: Lua 提供一个叫做 <code>type</code> 的函数以供查询给定值的类型. 这个函数实现在解释器之外的 C 扩展库中. 这个库只是简单的将一个 C 函数 (叫做 <code>luaB_type</code>) 导入给 Lua 层. ( 这个 C 函数 ) 通过调用 Lua API 取得参数的类型<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup>.</p>
+<p>一方面, 这种技术能够简化解释器的实现, 一旦某种机制通过 API 实现了, 那么其对整个脚本语言也就可用了<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup>. 另一方面, 这也逼迫着语言特性&quot;穿过针孔&quot;. 可以用 Exception Handling 机制来作为这种&quot;取舍 ( trade-off )&quot; 的具体例子.</p>
+<h2 id="2-控制" class="headerLink">
+    <a href="#2-%e6%8e%a7%e5%88%b6" class="header-mark"></a>2. 控制</h2><p>第一个有关控制的问题是, 每一个脚本语言都要解决&quot;谁拥有着 main 函数&quot;的问题. 当我们让一门脚本语言嵌入宿主语言的时候. 我们希望脚本语言是一个库. main 函数则在宿主层中. 然而对于许多应用. 我们则想要脚本语言是一个有着自己的 main 函数的独立的程序.</p>
+<p>Lua 解决这个问题的方法是使用了单独的的独立程序. <strong>Lua 本身就完全地作为库 ( library ) 实现, 以达到嵌入其他语言的目标. Lua 的命令行程序则是一个使用了这个库的单独程序, 就像其他任何一个内嵌着 Lua 并且能够解释运行 Lua 代码片段的程序一样</strong> . 接下来的这段代码就是这个命令行程序的&quot;露骨&quot;版本. 真实的命令行程序则比这个更长. 并且需要捕获异常, 检查可空的值, 处理信号等其他&quot;真实世界&quot;中的细节. 但是其代码总量仍然不超过 500 行C代码.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt; </span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;luaxlib.h&#34; </span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;lualib.h&#34; </span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">line</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">lua_State</span> <span class="o">*</span><span class="n">L</span> <span class="o">=</span> <span class="n">luaL_newstate</span><span class="p">();</span> <span class="cm">/* create a new state */</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">luaL_openlibs</span><span class="p">(</span><span class="n">L</span><span class="p">);</span> <span class="cm">/* open the standard libraries */</span> 
+</span></span><span class="line"><span class="cl">    <span class="cm">/* reads lines and executes them */</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="n">fgets</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">line</span><span class="p">),</span> <span class="n">stdin</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">        <span class="n">luaL_loadstring</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">line</span><span class="p">);</span> <span class="cm">/* compile line to a function */</span> 
+</span></span><span class="line"><span class="cl">        <span class="n">lua_pcall</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span> <span class="cm">/* call the function */</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">lua_close</span><span class="p">(</span><span class="n">L</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>虽然函数调用是 Lua 与 C 之间交互的主题 .但借助于 API 仍然有很多种&quot;控制&quot;的手段: 迭代器, 错误处理 ( Error Handler ). 以及协程. Lua 中的迭代器能够用如下的方法来构造. 这个例子迭代单个文件中的每一行.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Lua" data-lang="Lua"><span class="line"><span class="cl"><span class="kr">for</span> <span class="n">line</span> <span class="kr">in</span> <span class="n">io.lines</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="kr">do</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="kr">end</span>
+</span></span></code></pre></div><p>虽然迭代器提供了一种新的语法. 但是他们却是在&quot;函数是第一类值&quot;的基础上构建的. 在这个例子中 <code>io.lines(file)</code> 返回了一个迭代函数. 这个函数每次调用时都能够返回文件的下一行. 所以.这一套 API 不需要任何特别的东西来控制迭代器. 无论是 C 中使用 Lua 的迭代器还是 Lua 中使用 C 代码编写的迭代器 ( 正如上述中的 <code>io.lines</code> ) 都非常容易. 在这种情况下 Lua 中不需要任何语法支持. 而 C 代码中的 <code>for</code> 循环则必须显式地完成 Lua 中隐式完成的这一切 <sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup>.</p>
+<p>异常捕获机制是 Lua 受到 Lua API 巨大影响的另一个部分. 所有的异常捕获都基于 C 中 <code>longjump</code> 这一机制. 这就是一个&quot;( 脚本语言的 ) 特性通过 API 导出给宿主语言&quot;的例子.</p>
+<p>Lua API 提供了两种调用 Lua 函数的机制: 受保护调用调用和裸调用. 裸调用不捕获任何调用过程中的异常. 而是越过这段代码通过 <code>longjump</code> 回到调用栈中最近的受保护调用之后. 受保护调用会用 <code>setjump</code> 来设置回退点. 以便于捕获任何调用过程中发生的错误. 同时这个调用会返回恰当的错误码( 描述出错的原因 ). <strong>受保护调用在嵌入式场景中极为重要. 因为宿主语言承受不起仅仅因为脚本中的一个偶然错误而崩溃的代价.</strong> 这种裸机程序仅仅使用 <code>lua_pcall</code> 就可以在保护模式下调用编译后的 Lua 代码.</p>
+<p>lua 标准库只导出了 <code>pcall</code> 这一个受保护调用的 API 给 lua. 有了 <code>pcall</code>. 在Lua 中编写等价的 <code>try-catch</code> 语句将会变成这样:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Lua" data-lang="Lua"><span class="line"><span class="cl"><span class="kd">local</span> <span class="n">ok</span><span class="p">,</span> <span class="n">errorobject</span> <span class="o">=</span> <span class="n">pcall</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span> 
+</span></span><span class="line"><span class="cl">    <span class="c1">-- here goes the protected code </span>
+</span></span><span class="line"><span class="cl"><span class="kr">end</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">if</span> <span class="ow">not</span> <span class="n">ok</span> <span class="kr">then</span> 
+</span></span><span class="line"><span class="cl">    <span class="c1">-- here goes the error handling code </span>
+</span></span><span class="line"><span class="cl">    <span class="c1">-- (errorobject has more information about the error) </span>
+</span></span><span class="line"><span class="cl"><span class="kr">end</span>
+</span></span></code></pre></div><p>固然这样的实现相比语言内置的 <code>try-catch</code> 机制略显臃肿. 但是和 C 的交互却非常合适. 实现起来也更加轻量.</p>
+<p>Lua 中协程的设计是另一个 Lua API 对语言有着巨大影响的地方. 协程有两种. 对称协程和非对称协程. 对称协程只提供了一种叫 transfer 的控制转移机制. 性质类似于 C 语言中的 <code>goto</code>. 能够让控制流在任意协程间相互转移. <strong>非对称协程提供了两种控制转移机制. 通常叫做 <code>resume</code> 和 <code>yield</code>. 就像一对 <code>call</code> 和 <code>return</code>. <code>resume</code> 转移控制流到一个协程中. 而 <code>yield</code> 则中断当前协程的执行. 将控制流返回到调用 <code>resume</code> 的地方</strong>.</p>
+<p>很容易想到协程能够作为一个调用栈来编写那些并发执行的程序. 对称协程的 transfer 机制类似于整个调用栈替换为另一个协程的栈<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup>. 而非对称协程则是将目标调用栈压入当前栈的顶部.</p>
+<p>对称协程比非对称协程更简洁但是给像 Lua 这样的嵌入式语言带来了问题. 脚本中任何活跃的 C 函数都必须在调用栈上保存相关的活跃寄存器组. 然而在脚本语言的执行过程中. 任何一刻的调用栈都混合着 C 函数和 Lua 函数 (尤其是, 在调用栈的底部通常是宿主程序用来初始化脚本层的 C 函数). 然而, 程序不能整个地把调用栈中的 C 函数移除. 因为 C 中没有任何机制来修改调用栈. 因此整个程序不能以 transfer 的方式转移控制权.</p>
+<p>非对称协程没有这些问题. 因为 <code>resume</code> 原语不影响当前调用栈. 但是程序仍然有不能穿过 C 代码来 <code>yield</code> 的限制. 这就意味着.在 <code>resume</code> 和 <code>yield</code> 之间的栈上不能有任何 C 函数. 这种限制是 Lua 中方便的协程的小小代价.</p>
+<h2 id="3-数据" class="headerLink">
+    <a href="#3-%e6%95%b0%e6%8d%ae" class="header-mark"></a>3. 数据</h2><p><strong>API 的既约集中只有 eval 方法的最重要的缺陷是: 所有的数据都需要通过代码段 ( Chunk ) 或者字符串序列化才能在在脚本层重建</strong>.  一个实用的 API 显然应当提供更高效的机制在脚本层与宿主程序中传递数据.</p>
+<p>当宿主调用脚本时. 数据流以参数的形式传递到脚本环境中. 并且以相反的流向返回结果. 当脚本语言调用宿主层函数时, 则是完全反过来. 无论是哪种情况, 数据都需要双向流动. 因此大多数关于数据传递的讨论都同时存在于嵌入和扩展两种情况中.</p>
+<p>在讨论 Lua-C API 是如何控制数据流之前. 先列出一个扩展 Lua 的例子. 接下来的代码展示了 Lua 标准库函数 <code>io.getenv</code> 的实现. 这个函数能够访问宿主程序的环境变量.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">int</span> <span class="nf">os_getenv</span><span class="p">(</span><span class="n">lua_State</span> <span class="o">*</span><span class="n">L</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">varname</span> <span class="o">=</span> <span class="n">luaL_checkstring</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">value</span> <span class="o">=</span> <span class="n">getenv</span><span class="p">(</span><span class="n">varname</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">lua_pushstring</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>为了脚本能够调用这个函数.必须将其注册到脚本环境中. 然而这只需要一下就足够了. 但现在. 我们先假定这个函数已经被注册到脚本环境中了. 那么可以用像这样的方式调用这个函数.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Lua" data-lang="Lua"><span class="line"><span class="cl"><span class="n">print</span><span class="p">(</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&#34;PATH&#34;</span><span class="p">))</span>
+</span></span></code></pre></div><p>这段代码中第一个要说明的事情是 <code>os_getenv</code> 的原型. 函数唯一的参数就是一个 <code>lua_State</code>. 解释器通过内部的某个数据结构来传递实际参数给 <code>os_getenv</code> 函数 ( 在这个例子中, 是环境变量的名字, 位于 <code>varname</code> 中 ). 这个数据结构是 Lua 虚拟机中容纳变量的栈. 我们使用 <strong>参数栈</strong> 作为这个机制的称呼.</p>
+<p>当 Lua 脚本调用 <code>getenv</code> 函数时.解释器将会调用 <code>os_getenv</code> 函数. 此时这个参数栈中第一个值就是传递给 <code>getenv</code> 函数的参数. 而 <code>os_genenv</code> 函数则先调用<code>Lua_checkstring</code> 函数判断栈上第一个位置是不是一个字符串. 并且返回一个相应的的C风格字符串的指针( 如果不是的话, 那么将会通过 <code>longjump</code> 返回错误点, 所以不会回到 <code>os_getenv</code> 中).</p>
+<p>接下来.这个函数调用了 C 库函数 <code>getenv</code>. 也就是真正取得环境变量的部分. 然后再通过调用 <code>Lua_pushstring</code> 函数将其返回成为 Lua 中的字符串. 并且放到参数栈顶. 最后, 这个函数返回数字 <code>1</code> 以通知解释器: 这个函数返回了一个值. <code>return</code> 语句会返回栈上到底有多少个作为函数调用结果的值( 因为Lua中常常有函数返回多个值).</p>
+<p>现在再返回最初如何注册 <code>os_getenv</code> 函数到 <code>Lua</code> 脚本环境中的问题. 最为简单的方法就是像如下这样替换我们刚刚例子中的代码.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="n">lua_State</span> <span class="o">*</span><span class="n">L</span> <span class="o">=</span> <span class="n">luaL_newstate</span><span class="p">();</span> <span class="cm">/* creates a new state */</span> 
+</span></span><span class="line"><span class="cl"><span class="n">luaL_openlibs</span><span class="p">(</span><span class="n">L</span><span class="p">);</span> <span class="cm">/* opens the standard libraries */</span> 
+</span></span><span class="line"><span class="cl"><span class="n">lua_pushcfunction</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">os_getenv</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl"><span class="n">lua_setglobal</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="s">&#34;getenv&#34;</span><span class="p">);</span>
+</span></span></code></pre></div><p>新增加的第一行就是用宿主语言扩展 Lua 的全部魔法了. 函数 <code>lua_pushfunction</code> _接受一个 C 函数指针并将其压入参数栈上. 当调用时, 直接调用指针对应的函数即可. 由于 Lua 中的函数是&quot;第一类值&quot; ( First-class Value ). 因此这个这个 API 不需要其他的设施注册全局函数, 局部函数或方法一类的.  这个 API 仅仅需要单独的一个注入函数 <code>lua_pushfunction</code>.  一旦被作为 Lua 函数创建. 那么新的值就可以像 Lua 中的其他值一样被修改. 代码中新增加的第二行调用了 <code>lua_setglobals</code> 函数. 来将栈上的第一个参数 ( 也就是 C 函数 ) 作为全局变量<code>getenv</code> 注入到全局变量表中.</p>
+<p>除了作为第一类值, Lua 中的函数也常常是匿名的. 像这样的匿名函数声明其实是赋值语句的语法糖而已:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-Lua" data-lang="Lua"><span class="line"><span class="cl"><span class="n">inc</span> <span class="o">=</span> <span class="kr">function</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="kr">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="kr">end</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">-- after desugar:</span>
+</span></span><span class="line"><span class="cl"><span class="kr">function</span> <span class="nf">inc</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="kr">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span> <span class="kr">end</span> 
+</span></span></code></pre></div><p>我们用于注册全局表的函数 <code>getenv</code>. 这个 API 严格来说和 Lua 中的函数声明不是一个东西, 它其实创建了一个匿名的函数. 并且将其赋值给全局表 <code>&quot;getenv&quot;</code> 对应的值.</p>
+<p>沿着同样的思路. <strong>这一套 API 并不需要不同的设施来调用不同的 Lua 函数. 无论是全局函数, 局部函数, 还是方法等. 为了调用同一类型的函数. 宿主层必须使用规定好的 API 当中的数据处理设施将 C 函数放在栈上. 然后放下其余的参数. 一旦函数和参数都已经就绪. 宿主语言就可以用一个 API 原语来调用. 同时无需关心这个函数到底是来自于 C 还是来自于 Lua</strong>.</p>
+<p><strong>表的广泛使用是 Lua 中最独特的特性之一</strong>. 一个表就是一个关联数组. 表是 Lua 中唯一的一个数据结构. 所以其比其他同样有着相似结构的语言中的那些结构发挥着更重要的作用. Lua 不仅仅使用表承担起所有数据结构的重任. 也同样为其他语言层面的机制发挥作用, 比如模块 ( module ), 对象 ( object ), 以及环境 ( environment ).</p>
+<p>接下来的例子展示了通过 API 修改 Lua 中的表.  函数 <code>os_environ</code> 创建来一个可以访问所有环境变量的表并返回给进程.  这个函数假定访问了在 POSIX 系统中预先定义好的环境变量的数组.数组中的每一个索引是一个形如&quot;name=value&quot;的字符串.以此描述了对应的环境变量.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-C" data-lang="C"><span class="line"><span class="cl"><span class="k">extern</span> <span class="kt">char</span> <span class="o">**</span><span class="n">environ</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="k">static</span> <span class="kt">int</span> <span class="nf">os_environ</span> <span class="p">(</span><span class="n">lua_State</span> <span class="o">*</span><span class="n">L</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">i</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    <span class="cm">/* push a new table onto the stack */</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">lua_newtable</span><span class="p">(</span><span class="n">L</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">    <span class="cm">/* repeat for each environment variable */</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">environ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">!=</span> <span class="nb">NULL</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">        <span class="cm">/* find the ’=’ in NAME=VALUE */</span> 
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="o">*</span><span class="n">eq</span> <span class="o">=</span> <span class="n">strchr</span><span class="p">(</span><span class="n">environ</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="sc">&#39;=&#39;</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">eq</span><span class="p">)</span> <span class="p">{</span> 
+</span></span><span class="line"><span class="cl">            <span class="cm">/* push name */</span> 
+</span></span><span class="line"><span class="cl">            <span class="n">lua_pushlstring</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">environ</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">eq</span> <span class="o">-</span> <span class="n">enviro</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span> 
+</span></span><span class="line"><span class="cl">            <span class="cm">/* push value */</span> 
+</span></span><span class="line"><span class="cl">            <span class="n">lua_pushstring</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">eq</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">            <span class="cm">/* table[name] = value */</span> 
+</span></span><span class="line"><span class="cl">            <span class="n">lua_settable</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">);</span> 
+</span></span><span class="line"><span class="cl">        <span class="p">}</span> 
+</span></span><span class="line"><span class="cl">    <span class="p">}</span> 
+</span></span><span class="line"><span class="cl">    <span class="cm">/* result is the table */</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>函数 <code>os_environment</code> 第一步. 通过调用 <code>lua_newtable</code> 在栈顶创建了一个新的表. 然后这个函数遍历数组来创建装有数组中内容的表. 对于每一对变量. 将 <code>name</code> 和 <code>value</code> 压入栈顶. 然后调用 <code>lua_settable</code> 来在新的表中存储键值对. (<code>lua_pushlstring</code> 接受一个显示指出长度的字符串.而 <code>lua_pushstring</code> 则要求字符串以 <code>\0</code> 结尾). 函数 <code>lua_setable</code> 假定键值对已经位于栈顶. 参数 <code>-3</code> 则表明要存储的表在栈的何处(负数则表明从栈顶开始索引). 函数 <code>lua_settable</code> 将栈顶的简直对出栈. 然后留下最初的表. 因此, 在每次迭代之后. 表仍然留在栈顶.最终返回值为 <code>1</code> 则通知Lua虚拟机表是这个函数唯一的返回值.</p>
+<p><strong>Lua API 的功能是其并不提供能够让 C 代码直接引用 Lua 中的对象.任何被 C 代码修改的值都在参数栈上.</strong> 在最后一个例子中. 函数 <code>lua_environ</code> 创建了一个表.存储了所有的键值对并返回给解释器. 同时. 这个表还留在栈上.</p>
+<p>我们可以比较一下在不同语言中. C 代码引用这种语言中的对象的方法.  Python 使用了 <code>PyObject</code> 类型. JNI ( Java Native Interface ) 则使用了 <code>jobject</code>. 更早版本的 Lua 也提供了这样的方式. 一个叫做 <code>lua_Object</code> 的类型.  在一段时间后. 我们决定改变这一套 API. 使用 <code>Lua_Objet</code> 用来交互. 最大的问题在于垃圾收集器. 在 Python 中. 程序员负责调用 <code>Py_INCRED</code> 和 <code>DECREF</code> 来增加和减少被修改的对象的引用计数. 这样显式计数不仅难用而且错误频发. 而在 JNI (和早期的 Lua 中), 直到创建该引用的函数返回之前, 这个引用都是有效的. 这种方法更简单. 比起手动维护引用计数的方法也更安全. 但是程序员无法控制对象的生命周期. 任何函数中创建的对象都将在函数返回时释放. 作为对比, 使用参数栈允许程序员用安全的办法控制任何对象的生命周期.  <strong>当一个对象在栈上时. 他就不会被回收. 一旦其离开了栈. 就无法被修改. 不仅如此. 栈也是传递参数和返回值的很自然的办法.</strong></p>
+<p>表在 Lua 中的广泛使用对这套 API 的影响是很干净的.  显然任何在 Lua 中以表的形式呈现的东西都可以被用类似的办法修改.  一个 module 是表, 容纳着函数和关联的数据 ( 函数是第一类值 ). 在 <code>math. sin(x)</code> 的调用过程中. 你以为你在调用 math module 中的 <code>sin</code> 函数. 实际上调用的是全局表中名为 <code>math</code> 的表中名为 <code>sin</code> 的函数. 因此, 宿主语言非常容易创建模块. 为已有的模块添加函数. 以及导入用 Lua 写成的模块等等.</p>
+<p>Lua 中的对象遵循着简单的模式. <strong>Lua 使用基于原型的面向对象编程. 也就是说一个对象以一个表的形式存储, 成员方法则以函数的形式存储在原型中.</strong> 与模块类似, 宿主语言也很容易创建对象和调用方法.  <strong>在基于类 ( Class-based ) 的系统中. 一个类的实例和子类必须共享着相同的结构. 而原型系统则没有这样的要求</strong>. 所以宿主语言中的对象能够继承脚本层中的对象及其行为, 或者是反过来.</p>
+<h2 id="4-eval-以及-环境" class="headerLink">
+    <a href="#4-eval-%e4%bb%a5%e5%8f%8a-%e7%8e%af%e5%a2%83" class="header-mark"></a>4. eval 以及 环境</h2><p><strong>动态类型语言的基础要求就是 eval 函数. 这允许脚本语言执行在运行时构建的代码.</strong>  如上文所说, 一个 eval 函数是脚本语言( 与系统语言交互 ) API 的最基础的组成部分. 这是宿主语言运行脚本方法最基础的办法. <br>
+Lua 并不直接提供一个 eval 方法. 而是提供了一个叫做 <code>load</code> 的函数(在&quot;露骨&quot;的 Lua 样例代码中, <code>luaL_loadstring</code> 函数就是 <code>load</code> 的变体( variant )). 这个函数并不直接执行一段代码, 而是生成一个 Lua 中的函数, 当这个函数被调用时, 才会执行给定的代码片段.</p>
+<p>我们很容易就能把 <code>load</code> 转换成 <code>eval</code>, 反之亦然. <strong>不考虑功能上的等价,  <code>load</code> 有很多 <code>eval</code> 所没有的优势. 从概念上说, <code>load</code> 把程序文本映射到程序中的一个变量, 而非一个动作.</strong> <code>eval</code> 函数通常是 API 中最复杂的函数. 通过把 &ldquo;编译&rdquo; 和执行的过程分离, 实现起来就简单的多. 另外, 与<code>eval</code>不同, <code>load</code> 没有任何副作用.</p>
+<p>编译和执行的分离也避免二者绑定导致的问题, Lua 中有三种不同的 <code>load</code> 函数, 取决于数据源, 分别能从: 传入函数的字符串, 文件, 给定的 reader 函数<sup id="fnref:8"><a href="#fn:8" class="footnote-ref" role="doc-noteref">8</a></sup> 执行加载的功能. 前两者的实现也是依赖于最后一种.</p>
+<p>由于有两种函数调用方式( 裸调用和受保护调用 ), 三种加载方式, <code>eval</code> 函数实际上有六种可能的情况.</p>
+<p>错误处理也更简单了, 因为静态的错误和动态的错误<sup id="fnref:9"><a href="#fn:9" class="footnote-ref" role="doc-noteref">9</a></sup> 会各自独立地发生. 最终, <code>load</code> 会确保 Lua 代码仍然处在某个函数中, 这能给予语言更多一致性( regularity ).</p>
+<p>环境的概念与 <code>load</code> 函数密切相关. <strong>每一个图灵完备的语言都能解释其自身, 这是图灵机的标志之一.</strong> 让 <code>eval</code> 与众不同的是, 他能让动态生成的代码使用与整个程序完全相同的环境来执行. 换言之, <code>eval</code> 函数提供了某些层级上的反射. 例如, 我们不难用 C 实现一个 C 的解释器. 但是面对 <code>x = 1</code> 这样的一个语句, 解释器没有访问到解释器本身的 <code>x</code> 变量的方法(在某些 非 ANSI 标准的实现中, 那些使用动态链接的 C 程序可以找到给定全局符号的地址, 但仍然无法获得有关于符号类型的信息).</p>
+<p>一个环境在 Lua 中就是一个表, Lua 提供两种变量, 局部变量和表的域变量. <strong>从语法上说, Lua 提供了全局变量, 任何不被声明为局部变量的变量, 都是可以认为全局变量. 从语义上说, 那些未被绑定到局部变量的变量名实际上关联到包含这个函数所在的表中的域的某个字段. 这张表就是这个函数所处的环境.  在典型的 Lua 程序中, 所有函数都有一张共享的单独的表, 也就是全局可用的环境表.</strong></p>
+<p>通过 Lua API 很容易访问到全局变量. 因为他们是表中的字段, 能够通过统一的 API 来操作这张表. 例如, 出现在&quot;露骨&quot; Lua 应用代码中的函数 <code>lua_setglobal</code>, 实际上是串联数个表操作原语的宏.</p>
+<p>另一边, 至于遵循着严格词法作用域的局部变量, 其根本不参与这套 API. 因为 C 代码无法从词法层面置于到 Lua 代码中, C 也无法访问到 Lua 中的局部变量( 除了使用某些调试机制). 这是实际中 Lua 唯一不能通过 API被模拟的机制.</p>
+<p>这个例外是有许多原因的. 词法作用域是一种有些悠久但很强大的概念, 其应当有一个标准的行为. 除此之外, 局部变量不能在作用域以外的地方被访问, 这是程序员封装和进行访问控制的基础. <strong>例如, 任何 Lua 文件都能声明局部变量, 同时其可见性只留在文件内部. 而且, 对于 Lua 的寄存器式虚拟机, 这种设计天然地允许编译器将所有的局部变量放在寄存器中.</strong></p>
+<h2 id="结语" class="headerLink">
+    <a href="#%e7%bb%93%e8%af%ad" class="header-mark"></a>结语</h2><p>前文已经解释过, 对外部世界提供的 API 并不是脚本语言实现中的细节, 相反是能够影响的整个语言设计的重要决策, 且已经陈述了 Lua 和其 API 是如何相互影响的.</p>
+<p><strong>任何脚本语言的设计都有许多这样的取舍. 一些语言的定位倾向于可嵌入性, 于是变得简单, 而为了另一些偏好例如静态验证等, 则会让设计走向相反的方向.</strong> Lua 的设计涉及到数种关于可嵌入性的影响. 模块的设计就是一个典型的例子. Lua 使用尽可能少的额外机制来支持模块, 为了简单和可嵌入的特性而放弃掉了像 无条件导入 ( unqualified import ) 这样的设施. 另一个例子是对词法作用域的支持, 在这里我们选择了更好的静态验证而放弃掉了可嵌入性. 我们虽然满意于 Lua 中各种取舍的平衡, 但要知道,  Lua 也不过是 &ldquo;穿过针孔&rdquo; 的众多尝试中还算值得学习的一个而已.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>例如, 更改脚本中的函数即可修改程序逻辑而无需重新编译整个程序.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>既约集: 完整且最小的集合. 这一翻译取自 [ 既约多项式 ] 的概念: 次数大于零的有理数系数多项式，不能分解为两个次数较低但都大于零的有理数系数多项式的乘积时，称为有理数范围内的&quot;既约多项式&rdquo;.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>序列化: 将一段数据以字符串的形式保存, 反序列化则是反过来, 从字符串中重建数据(通常是某种语言的某种对象).&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p>这个例子可能有点难以理解, 需要读者知道 Lua API 的工作原理或扩展 Lua 的方法, 可以见下文 <code>getenv</code> 的例子辅助理解.&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p>因为宿主语言操作 API, 并且是脚本语言的镜子( Act as a mirror ).&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:6">
+<p>这里的含义是, Lua 中的循环并不是 C 中的循环, 而是针对迭代函数的一系列调用, 并且只需要一系列函数调用就能 C 中显示声明的循环语句.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:7">
+<p>也就是有栈协程.&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:8">
+<p>reader 函数: 某种迭代函数, 每次调用返回一个字符串.&#160;<a href="#fnref:8" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:9">
+<p>原文为: static and dynamic, 这里的意思应该对应到编译时和运行时.&#160;<a href="#fnref:9" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+</div>
+
+        <div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>Updated on 2022-10-08</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/">脚本语言虚拟机</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">Back</a></span>&nbsp;|&nbsp;<span><a href="/">Home</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"></div>
+</div>
+</article></div>
+        </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">试玉</div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2022</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank" rel="noopener noreferrer"></a></span></div>
+            <div class="footer-line"></div>
+            <div class="footer-line">
+            </div>
+        </div></footer></div>
+
+    <div id="fixed-buttons"><a href="#back-to-top" id="back-to-top-button" class="fixed-button" title="Back to Top">
+            <i class="fas fa-arrow-up fa-fw"></i>
+        </a><a href="#" id="view-comments" class="fixed-button" title="View Comments">
+            <i class="fas fa-comment fa-fw"></i>
+        </a>
+    </div><div class="assets"><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/topbar/topbar.min.js"></script><script type="text/javascript" src="/lib/pjax/pjax.min.js"></script><script type="text/javascript" src="/js/theme.min.js" defer></script></div>
+
+<div class="pjax-assets"><script type="text/javascript">window.config={"code":{"copyTitle":"Copy to clipboard","maxShownLines":50},"comment":{}};</script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script></div>
+</body>
+
+</html>

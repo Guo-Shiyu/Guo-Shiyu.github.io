@@ -1,14 +1,14 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
         <title>脚本语言虚拟机 - Tag -  Shiyu | Random access to my thoughts.</title>
-        <link>https://guo-shiyu.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/</link>
+        <link>http://guo-shiyu.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/</link>
         <description>脚本语言虚拟机 - Tag -  Shiyu | Random access to my thoughts.</description>
-        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</lastBuildDate><atom:link href="https://guo-shiyu.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="self" type="application/rss+xml" /><item>
-    <title>[译] Lua : 能够穿过“针孔”的语言</title>
-    <link>https://guo-shiyu.github.io/posts/first_post/</link>
+        <generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</lastBuildDate><atom:link href="http://guo-shiyu.github.io/tags/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="self" type="application/rss+xml" /><item>
+    <title>[译] Lua : 能够穿过&#39;针孔&#39;的语言</title>
+    <link>http://guo-shiyu.github.io/posts/passing-a-language-through-the-needle/</link>
     <pubDate>Thu, 22 Sep 2022 23:12:43 &#43;0800</pubDate><author>
         <name>Shiyu</name>
-    </author><guid>https://guo-shiyu.github.io/posts/first_post/</guid>
-    <description><![CDATA[this is a test summary]]></description>
+    </author><guid>http://guo-shiyu.github.io/posts/passing-a-language-through-the-needle/</guid>
+    <description><![CDATA[脚本语言一个重要的特性就是其与某种系统级语言的交互能力. 这种交互有两种主要的形式: 扩展和嵌入. 在实践中. FFI 覆盖了大部分像访问外部库, 或者进行系统调用这样的对于扩展的需要. 但另一方面. &ldquo;嵌入&quot;的要求则很难满足. 因为这通常需要宿主语言和脚本语言之间更为密切的交互. 仅靠 FFI 并不能满足这一需求.]]></description>
 </item></channel>
 </rss>
