@@ -28,7 +28,7 @@ description: "四年后, 我终于觉得自己羽翼足够丰满, 可以自行�
 + [Rua on Github](https://github.com/Guo-Shiyu/rua)
 
 + Compiler
-  + [0x1 Design Goals, Dev Rhythm and Compiler Overview]()
+  + [0x1 Design Goals, Compiler Overview and Dev Rhythm](/posts/clir-0x1-design-goals-compiler-overview-and-dev-rhythm)
   + 0x3 Lua Grammar, AST Defination and Pass
   + 0x4 LL(2) Parser, Grammar Review and Implementation Details
   + 0x7 Proto, Binary Chunk Dump and Instruction Set
@@ -37,10 +37,10 @@ description: "四年后, 我终于觉得自己羽翼足够丰满, 可以自行�
   + ... 
   + 0x_ (Appendix) Extra CGT Optimization: Intermidiate Table Caching
   + 0x_ (Appendix) If There is a Lua LSP Based on `ruac`
-  + 0x_ (Appendix) Sea of Nodes IR in `ruac`
+  <!-- + 0x_ (Appendix) Sea of Nodes IR in `ruac` -->
 
 + Virtual Machine  
-  + [0x2 Design Goals, Dev Rtythm and VM Infrastructure]()
+  + 0x2 Design Goals, Dev Rtythm and VM Infrastructure
   + 0x5 Object Model and GC (1): Mark and Sweep GC in Rust
   + 0x6 Object Model and GC (2): Basic Data Types
   + 0x8 Register-based VM, Instruction Loop and Error Handling
