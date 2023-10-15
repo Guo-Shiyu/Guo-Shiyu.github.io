@@ -1,8 +1,7 @@
 ---
-author: Guo Shiyu
-pubDatetime: 2023-03-4T15:22:00Z
 title: "Game Programming: State Machine"
-postSlug: Game-StateMachine # url
+pubDatetime: 2023-03-4T15:22:00Z
+author: Guo Shiyu
 featured: true
 draft: false
 tags:
