@@ -14,16 +14,17 @@ import { SOCIALS } from "@config";
 const posts = await getCollection("blog");
 
 const sortedPosts = getSortedPosts(posts);
+
 const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
 
 const socialCount = SOCIALS.filter(social => social.active).length;
----
 
+---
 <Layout>
   <Header />
   <main id="main-content">
     <section id="hero">
-      <h1 class="mr-2">Mingalaba</h1>
+      <h1 class="mr-2">试玉 (Shiyu)</h1>
       <a
         target="_blank"
         href="/rss.xml"
@@ -31,7 +32,8 @@ const socialCount = SOCIALS.filter(social => social.active).length;
         aria-label="rss feed"
         title="RSS Feed"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="rss-icon"
+
+      <svg xmlns="http://www.w3.org/2000/svg" class="rss-icon"
           ><path
             d="M19 20.001C19 11.729 12.271 5 4 5v2c7.168 0 13 5.832 13 13.001h2z"
           ></path><path
@@ -39,22 +41,14 @@ const socialCount = SOCIALS.filter(social => social.active).length;
           ></path><circle cx="6" cy="18" r="2"></circle>
         </svg>
       </a>
+      
+      <br />
 
-      <p>
-        AstroPaper is a minimal, responsive, accessible and SEO-friendly Astro
-        blog theme. This theme follows best practices and provides accessibility
-        out of the box. Light and dark mode are supported by default. Moreover,
-        additional color schemes can also be configured.
-      </p>
-      <p>
-        Read the blog posts or check
-        <LinkButton
-          className="hover:text-skin-accent underline underline-offset-4 decoration-dashed"
-          href="https://github.com/satnaing/astro-paper#readme"
-        >
-          README
-        </LinkButton> for more info.
-      </p>
+      And his soul is seasoned, his soul is very professional. <br />
+      Only his body remains forever an amateur. <br />
+      It tries and it misses, gets muddled, doesn't learn a thing. <br />
+      Drunk and blind in its pleasures and its pains.
+      
       {
         // only display if at least one social link is enabled
         socialCount > 0 && (
