@@ -10,6 +10,9 @@ tags:
   - lua
   - rust
 
+ogImage: /cover/rua-starts-here.png
+
+readingTime: "5 min"
 description: "四年后, 我终于觉得自己羽翼足够丰满, 可以自行实现某个语言的编译器和解释器来为本科生涯画上句号, Lua 是脑中第一个想到的候选."
 ---
 

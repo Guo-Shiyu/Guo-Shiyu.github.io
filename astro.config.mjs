@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import tailwind from "@astrojs/tailwind";
 import react from "@astrojs/react";
 import remarkToc from "remark-toc";
+import { remarkReadingTime } from "./src/utils/remark-reading-time.mjs";
 import remarkCollapse from "remark-collapse";
 import sitemap from "@astrojs/sitemap";
 
@@ -21,6 +22,7 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [
       remarkToc,
+      remarkReadingTime,
       [
         remarkCollapse,
         {

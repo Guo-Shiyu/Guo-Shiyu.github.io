@@ -11,6 +11,8 @@ tags:
   - lua
   - rust
 
+readingTime: "9 min"
+ogImage: "/cover/compiler-map.png"
 description: '"Make Software Engineering Great Again" ... 将编译器的各个组件实现为 API 集合有利于复用已有的工作, 并能降低后续开发和维护成本. 我想 ruac 与 luac 最大的不同就在于此. ruac 会是是一系列可重用, 性能说得过去的 API 集合.我希望它最终是"软件工程的胜利", 最好能有着跟 `Roslyn` 一样好看的 API.'
 ---
 

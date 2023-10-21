@@ -8,6 +8,7 @@ tags:
   - gameplay
   - design pattern
 
+readingTime: "15 min"
 description: 从红绿灯到 FPS 中的武器管理模块, 逐步构建高效可重用的层次化状态机 （Hierarchical State Machine). (C++ 1x / C++2a)
 ---
 
